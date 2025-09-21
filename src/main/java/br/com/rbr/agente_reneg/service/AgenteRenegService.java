@@ -13,7 +13,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AngeteRenegService {
+public class AgenteRenegService {
     private ChatClient chatClient;
     @Autowired
     private AgenteRenegInMemoryChatMemoryService agenteRenegChatMemoryService;
@@ -24,7 +24,7 @@ public class AngeteRenegService {
     @Autowired
     private KnowledgeBaseTools knowledgeBaseTools;
 
-    public AngeteRenegService(ChatClient.Builder chatClientBuilder) {
+    public AgenteRenegService(ChatClient.Builder chatClientBuilder) {
         this.chatClient = chatClientBuilder.build();
     }
 

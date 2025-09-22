@@ -1,6 +1,6 @@
 package br.com.rbr.agente_reneg.service;
 
-import br.com.rbr.agente_reneg.prompt.ListaContratosPrompt;
+import br.com.rbr.agente_reneg.prompt.PromptLoader;
 import br.com.rbr.agente_reneg.tools.KnowledgeBaseTools;
 import br.com.rbr.agente_reneg.tools.ListraContratosTools;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ai.chat.model.ChatResponse;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -18,7 +19,7 @@ public class AgenteRenegService {
     @Autowired
     private AgenteRenegInMemoryChatMemoryService agenteRenegChatMemoryService;
     @Autowired
-    private ListaContratosPrompt listaContratosPrompt;
+    private PromptLoader promptLoader;
     @Autowired
     private ListraContratosTools listraContratosTools;
     @Autowired
@@ -30,7 +31,7 @@ public class AgenteRenegService {
 
     public ChatResponse execute(final String mensagem, final String conversationId) {
         final List<Message> historico = agenteRenegChatMemoryService.obterHistorico(mensagem, conversationId);
-        var systemPrompt = listaContratosPrompt.getPrompt();
+        var systemPrompt = promptLoader.getListaContratosPrompt();
 
         final ChatResponse response =  chatClient.prompt()
                 .system(systemPrompt.getContents())
@@ -39,7 +40,7 @@ public class AgenteRenegService {
                 .call()
                 .chatResponse();
 
-        agenteRenegChatMemoryService.salvarHistorico(historico, response.getResult().getOutput(), conversationId);
+        agenteRenegChatMemoryService.salvarHistorico(historico, Objects.requireNonNull(response).getResult().getOutput(), conversationId);
 
         return response;
     }

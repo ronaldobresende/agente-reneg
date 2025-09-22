@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Agente de Renegociação</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background-color: #f4f4f9; }
+        h1 { color: #333; }
+        .chatbox { border: 1px solid #ccc; background-color: white; padding: 10px; height: 400px; overflow-y: scroll; margin-bottom: 10px; border-radius: 5px; }
+
+        .user-container, .agent-container {
+            display: flex;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .user-container { justify-content: flex-end; }
+
+        /* --- MUDANÇA CRÍTICA AQUI --- */
+        .agent-container {
+            justify-content: flex-start;
+            /* Força os itens internos a se empilharem verticalmente */
+            flex-direction: column;
+        }
+
+        .user, .agent {
+            padding: 10px 15px;
+            margin: 0;
+            border-radius: 12px;
+            max-width: 75%;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+        .user { background-color: #dcf8c6; }
+        .agent {
+            background-color: #f1f0f0;
+            white-space: pre-wrap;
+            text-align: left; /* Garante alinhamento à esquerda dentro da bolha */
+            /* A propriedade flex-grow: 1; não é mais necessária aqui */
+        }
+
+        /* Resto do CSS (inalterado) */
+        .form-container { display: flex; gap: 10px; }
+        input[type="text"] { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 15px; border: none; color: white; border-radius: 5px; cursor: pointer; }
+        button.send { background-color: #007bff; }
+        button.clear { background-color: #dc3545; }
+        button:disabled { background-color: #aaa; cursor: not-allowed; }
+        .loading { text-align: center; color: #555; font-style: italic; display: none; }
+    </style>
+</head>
+<body>
+<h1>Agente de Renegociação</h1>
+
+<form action="/chat/clear" method="post" style="margin-bottom: 10px;">
+    <button class="clear" type="submit">Limpar Conversa</button>
+</form>
+
+<div class="chatbox" id="chatbox">
+    <div th:each="line : ${history}" th:class="${line.startsWith('Você:') ? 'user-container' : 'agent-container'}">
+
+        <p th:utext="${line}" th:class="${line.startsWith('Você:') ? 'user' : 'agent'}"></p>
+
+    </div>
+</div>
+
+<div id="loadingIndicator" class="loading">
+    <p>Pensando...</p>
+</div>
+
+<form id="chatForm" action="/chat" method="post" class="form-container">
+    <input type="hidden" name="conversationId" th:value="${conversationId}">
+
+    <input id="messageInput" type="text" name="message" placeholder="Digite sua mensagem e pressione Enter..." autofocus>
+    <button id="sendButton" class="send" type="submit">Enviar</button>
+</form>
+
+<script>
+    const chatForm = document.getElementById('chatForm');
+    const sendButton = document.getElementById('sendButton');
+    const messageInput = document.getElementById('messageInput');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const chatbox = document.getElementById('chatbox');
+
+    chatForm.addEventListener('submit', function(event) {
+        const messageText = messageInput.value.trim();
+        if (messageText === '') {
+            event.preventDefault();
+            return;
+        }
+
+        loadingIndicator.style.display = 'block';
+        sendButton.disabled = true;
+
+        // A LINHA PROBLEMÁTICA FOI REMOVIDA DAQUI
+        // messageInput.disabled = true;
+
+        sendButton.textContent = 'Aguarde...';
+    });
+
+    // Rola o chat para o final
+    chatbox.scrollTop = chatbox.scrollHeight;
+</script>
+</body>
+</html>
